@@ -60,8 +60,10 @@ guidata(hObject, handles);
 
 % UIWAIT makes FLIMgui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-
-filenames = {'file1' 'file2' 'file3'};
+temp = guidata(gcf)
+[filenames pathname] = uigetfile('./*.txt','MultiSelect','on')
+filenames = cellstr(filenames);
+oldpath = pwd;
 
 
 % --- Outputs from this function are returned to the command line.
@@ -99,6 +101,6 @@ function listbox1_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-filenames = {'file1' 'file2' 'file3'};
+handles.f
 set(hObject,'String',filenames)
 

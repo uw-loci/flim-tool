@@ -14,6 +14,10 @@ clear
 [filenames pathname] = uigetfile('./*.txt','MultiSelect','on')
 filenames = cellstr(filenames);
 oldpath = pwd;
+fid_out = fopen('output.xls', 'w+');
+fid_ob = fopen('objects.xls', 'w+');
+fprintf(fid_ob, 'Filename\tObject Num\tArea\tPerimeter\tAverage Value\tStd Dev\r\n');
+
 
 
 %output string size: rows = number of filenames, cols = number output
@@ -57,18 +61,20 @@ for j = 1:size(filenames,2)
 end
 
 % Print out the metrics for each file along with the header in a text file
-fid = fopen('output.xls', 'w+');
-fprintf(fid,'\tmeanTau1\tstdevTau1\tmeanA1\tstdevA1\tmeanIntens\tstdevIntens');
-fprintf(fid,'\tmeanChiSq\tmeanTau2\tstdevTau2\tmeanA2\tstdevA2\r\n');
-for k =1:size(filenames,2)
-    fprintf(fid, char(filenames(1,k)));
-     for kcol = 1:size(outVals,2)
-         fprintf(fid,'\t%6.3f', outVals(k,kcol));
-     end
-     fprintf(fid,'\r\n');
-end
-fclose(fid);
 
+fprintf(fid_out,'\tmeanTau1\tstdevTau1\tmeanA1\tstdevA1\tmeanIntens\tstdevIntens');
+fprintf(fid_out,'\tmeanChiSq\tmeanTau2\tstdevTau2\tmeanA2\tstdevA2\r\n');
+for k =1:size(filenames,2)
+    fprintf(fid_out, char(filenames(1,k)));
+     for kcol = 1:size(outVals,2)
+         fprintf(fid_out,'\t%6.3f', outVals(k,kcol));
+     end
+     fprintf(fid_out,'\r\n');
+end
+fclose(fid_out);
+fclose(fid_ob);
 
 %new_data = reshape(data(:,3),256,256)
 %}
+
+

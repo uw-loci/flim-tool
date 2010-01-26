@@ -6,7 +6,7 @@
 
 
 %Try Tau1 instead of efficiency_im
-lifetime_im = Tau2{j};
+lifetime_im = A2{j};
 
 bwim = im2bw(lifetime_im,graythresh(lifetime_im)); % currently using otsu's method for thresholding
 % Experiment with newer methods from literature (SCT, ALT)
@@ -27,6 +27,13 @@ end
 stats = regionprops(L,'Area','Centroid','Perimeter');
 threshold = 0.94;
 
+area = zeros(length(B),1);
+perimeter = zeros(length(B),1);
+avlt  = zeros(length(B),1);
+stdlt = zeros(length(B),1);
+
+%% Display the area size in pixels for the determined objects
+
 % loop over the boundaries
 for k = 1:length(B)
     % obtain (X,Y) boundary coordinates corresponding to label 'k'
@@ -35,18 +42,18 @@ for k = 1:length(B)
     delta_sq = diff(boundary).^2;
     perimeter = sum(sqrt(sum(delta_sq,2)));
     % obtain the area calculation corresponding to label 'k'
-    area = stats(k).Area;
+    area(k,1) = stats(k).Area;
     % compute the roundness metric
     roundness = 4*pi*area/perimeter^2;
     % display the results - area metric
-    metric_string = sprintf('%2.2f',area);
+    metric_string = sprintf('%2.2f',area(k,1));
     % mark objects above the threshold with a black circle
     %if metric > threshold
         centroid = stats(k).Centroid;
         plot(centroid(1),centroid(2),'ko');
     %end
     
-    metric_string2 = sprintf('%2.2f', area);
+    metric_string2 = sprintf('%2.2f', area(k,1));
     %text(boundary(1,2)-35,boundary(1,1)+13,metric_string,'Color','y',...
     %'FontSize',14,'FontWeight','bold')
 
@@ -76,16 +83,18 @@ for i = 1: numobjects
     
     mask = (L==i); % Create mask for each object
     masked_lt = mask.*lifetime_im;
-    avg_val = sum(sum(masked_lt))/nnz(mask);
+    %Calculate the average value of object accounting for nonzero elements
+    avlt(i,1) = sum(sum(masked_lt))/nnz(masked_lt);
+    %Calculate the std. dev. of object only accounting for nonzero elements
     
+    stdlt(i,1) = ((sum(sum((masked_lt.^2)))./nnz(masked_lt) - avlt(i,1)^2))^(1/nnz(masked_lt));
     plot(bd(:,2),bd(:,1),'w', 'LineWidth', 2)
     
-    avlt_string = sprintf('%2.2f',avg_val);
+    avlt_string = sprintf('%2.2f',avlt(i,1));
 
     centroid = stats(i).Centroid;
     plot(centroid(1),centroid(2),'ko');
     
-    metric_string2 = sprintf('%2.2f', area);
     text(round(centroid(1)),round(centroid(2)),avlt_string,'Color','k',...
     'FontSize',14,'FontWeight','bold');
 end
@@ -103,11 +112,11 @@ for i = 1: numobjects
     
     mask = (L==i); % Create mask for each object
     masked_lt = mask.*lifetime_im;
-    perimeter = stats(i).Perimeter;
+    perimeter(i,1) = stats(i).Perimeter;
     
     plot(bd(:,2),bd(:,1),'w', 'LineWidth', 2)
     
-    perim_string = sprintf('%2.2f',perimeter);
+    perim_string = sprintf('%2.2f',perimeter(i,1));
 
     centroid = stats(i).Centroid;
     plot(centroid(1),centroid(2),'ko');
@@ -116,3 +125,23 @@ for i = 1: numobjects
     'FontSize',14,'FontWeight','bold');
 end
 title('Perimeter of each region')
+
+%% Write statistics to objects file
+
+object_stats = [area perimeter avlt stdlt];
+
+%print filename
+fprintf(fid_ob,'%s\r\n',char(filename));
+
+%print object number and stat
+
+for i = 1: numobjects
+    ob_numstr = strcat('object ', int2str(i))
+    fprintf(fid_ob,'\t%s\t%6.3f\t%6.3f\t%6.3f\t%6.3f\r\n',ob_numstr, area(i), perimeter(i), avlt(i),stdlt(i));
+end
+
+
+
+
+
+
