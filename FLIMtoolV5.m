@@ -11,6 +11,7 @@
 % V5: Keep all the images and vals vectors in a cell for GUI
 
 clear
+close all;
 [filenames pathname] = uigetfile('./*.txt','MultiSelect','on')
 filenames = cellstr(filenames);
 oldpath = pwd;
@@ -56,8 +57,6 @@ for j = 1:size(filenames,2)
 
     outVals(j,:) = [mean_Tau1 stdev_Tau1 mean_A1 stdev_A1 mean_intensity...
     stdev_intensity, mean_Chisq mean_Tau2 stdev_Tau2 mean_A2 stdev_A2]
-
-
 end
 
 % Print out the metrics for each file along with the header in a text file

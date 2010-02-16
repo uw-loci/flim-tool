@@ -83,23 +83,40 @@ for i = 1: numobjects
     
     mask = (L==i); % Create mask for each object
     masked_lt = mask.*lifetime_im;
-    %Calculate the average value of object accounting for nonzero elements
-    avlt(i,1) = sum(sum(masked_lt))/nnz(masked_lt);
-    %Calculate the std. dev. of object only accounting for nonzero elements
     
-    stdlt(i,1) = ((sum(sum((masked_lt.^2)))./nnz(masked_lt) - avlt(i,1)^2))^(1/nnz(masked_lt));
-    plot(bd(:,2),bd(:,1),'w', 'LineWidth', 2)
+    %number of nonzero elements in masked image( used in avg and std)
+    nz = nnz(masked_lt)
+    
+    %Calculate the average value of object accounting for nonzero elements
+    avlt(i,1) = sum(sum(masked_lt))/nz;
+    
+    %Calculate the std. dev. of object only accounting for nonzero elements
+    stdlt(i,1) = ((sum(sum((masked_lt.^2)))./nnz(masked_lt) - avlt(i,1)^2))^(1/nz);
+    %plot(bd(:,2),bd(:,1),'w', 'LineWidth', 2)
     
     avlt_string = sprintf('%2.2f',avlt(i,1));
 
     centroid = stats(i).Centroid;
-    plot(centroid(1),centroid(2),'ko');
+    %plot(centroid(1),centroid(2),'ko');
     
     text(round(centroid(1)),round(centroid(2)),avlt_string,'Color','k',...
     'FontSize',14,'FontWeight','bold');
+
+    %testing the profiling using the radon transform and improfile
+    major_axis = imline;
+    theta = getAngle(major_axis.getPosition);
+    
+    [colsum{i} nonzeros{i} norm_prof{i}] = myradon(masked_lt, mask, -1*theta);
+    object_im{i} = masked_lt;
+    
 end
 title('Average value in region');
 
+figure()
+for k =1:i
+subplot(i,1,k)
+plot(norm_prof{k})
+end
 %% Display the perimeters of each region
 
 figure()
